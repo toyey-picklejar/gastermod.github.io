@@ -18,8 +18,13 @@ export default defineMessages({
     },
     pop: {
         defaultMessage: 'pop',
-        description: 'Name of the pop sound, the default sound added to a sprite',
+        description: 'Name of the Pop sound',
         id: 'gui.sharedMessages.pop'
+    },
+    defaultSound: {
+        defaultMessage: 'Weird Route Jingle',
+        description: 'Name of the default sound added to a new sprite',
+        id: 'gui.sharedMessages.defaultSound'
     },
     replaceProjectWarning: {
         id: 'gui.sharedMessages.replaceProjectWarning',

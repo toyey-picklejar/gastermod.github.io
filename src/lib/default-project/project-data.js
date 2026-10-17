@@ -1,5 +1,6 @@
 import { defineMessages } from 'react-intl';
 import sharedMessages from '../shared-messages';
+import DEFAULT_SOUND from '../default-sound';
 
 let messages = defineMessages({
     variable: {
@@ -69,7 +70,12 @@ const projectData = translateFunction => {
                         rotationCenterY: 144
                     }
                 ],
-                sounds: [],
+                sounds: [
+                    {
+                        ...DEFAULT_SOUND,
+                        name: translator(messages.defaultSound)
+                    }
+                ],
                 volume: 100,
                 visible: true,
                 x: 0,

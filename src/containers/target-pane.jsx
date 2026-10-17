@@ -120,7 +120,7 @@ class TargetPane extends React.Component {
         const formatMessage = this.props.intl.formatMessage;
         const emptyItem = emptySprite(
             formatMessage(sharedMessages.sprite, {index: 1}),
-            formatMessage(sharedMessages.pop),
+            formatMessage(sharedMessages.defaultSound),
             formatMessage(sharedMessages.costume, {index: 1})
         );
         this.props.vm.addSprite(JSON.stringify(emptyItem)).then(() => {

@@ -3,6 +3,8 @@
  * Utility functions to return json corresponding to default empty assets.
  */
 
+import DEFAULT_SOUND from './default-sound';
+
 /**
  * Generate a blank costume object for vm.addCostume with the provided name.
  * @param {string} name the name to use for the costume, caller should localize
@@ -27,7 +29,16 @@ const emptyCostume = name => ({
  */
 const emptySprite = (name, soundName, costumeName) => ({
     objName: name,
-    sounds: [],
+    sounds: [
+        {
+            soundName: soundName,
+            soundID: 0,
+            md5: DEFAULT_SOUND.md5ext,
+            format: DEFAULT_SOUND.format,
+            rate: DEFAULT_SOUND.rate,
+            sampleCount: DEFAULT_SOUND.sampleCount
+        }
+    ],
     costumes: [
         {
             costumeName: costumeName,
