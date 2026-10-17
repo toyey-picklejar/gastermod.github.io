@@ -132,6 +132,12 @@
 .button:disabled {
     opacity: 0.8;
 }
+.error {
+    color: $text-primary;
+    background: $ui-primary;
+    outline: 1px solid $ui-white;
+    padding: 0.5rem;
+}
 
 .fallback-container {
     display: flex;

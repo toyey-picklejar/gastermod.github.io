@@ -34,20 +34,15 @@
     border-radius: 4px;
 }
 .setting.active {
-    background: #dbebff;
+    background: $ui-primary;
+    color: $text-primary;
+    outline: 1px solid $ui-white;
 }
 .setting:hover,
 .setting:focus-within {
-    background: #cadef5;
+    background: $ui-white;
+    color: $ui-primary;
 }
-[theme="dark"] .setting.active {
-    background: #16202c;
-}
-[theme="dark"] .setting:hover,
-[theme="dark"] .setting:focus-within {
-    background: #202f41;
-}
-
 .label {
     height: 32px;
     display: flex;

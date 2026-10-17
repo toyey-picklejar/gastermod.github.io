@@ -86,7 +86,6 @@ class Interface extends React.Component {
             isLoading,
             isPlayerOnly,
             isRtl,
-            onClickTheme,
             projectId,
             /* eslint-enable no-unused-vars */
             ...props
@@ -108,7 +107,6 @@ class Interface extends React.Component {
                     }) : null}
                 >
                     <GUI
-                        onClickTheme={onClickTheme}
                         isPlayground={true}
                         onUpdateProjectTitle={this.handleUpdateProjectTitle}
                         backpackVisible
@@ -136,7 +134,6 @@ Interface.propTypes = {
     isLoading: PropTypes.bool,
     isPlayerOnly: PropTypes.bool,
     isRtl: PropTypes.bool,
-    onClickTheme: PropTypes.func,
     projectId: PropTypes.string
 };
 

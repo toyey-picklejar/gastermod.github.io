@@ -1,11 +1,17 @@
-@import url('https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&display=swap');
-
-body {
-    font-family: "Pixelify Sans", sans-serif !important;
+@font-face {
+    font-family: "Determination";
+    src: url("../../../static/images/determination.ttf") format("truetype");
+    font-style: normal;
+    font-weight: normal;
+    font-display: swap;
 }
 
-body * {
-    font-family: "Pixelify Sans", sans-serif !important;
+body {
+    font-family: "Determination", sans-serif !important;
+}
+
+body *:not([data-font-preview]) {
+    font-family: "Determination", sans-serif !important;
 }
 
 h2 {

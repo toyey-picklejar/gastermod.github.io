@@ -30,7 +30,7 @@ h4 {
     font-size: 1rem;
 }
 a {
-    color: #25d;
+    color: #fff;
     cursor: pointer;
     text-decoration: underline;
 }
@@ -103,24 +103,15 @@ a {
 [theme="dark"] .player-only {
     color: #ddd;
 }
-[theme="dark"] a {
-    color: #4af;
-}
-
 .unshared-update,
 .infobox {
     line-height: 1.5em;
     padding: 0.5rem;
     margin: 5px 0 8px 0;
-    border: 1px solid #b9d6ff;
-    background-color: #dbebff;
+    border: 1px solid white;
+    background-color: #111;
+    color: white;
     border-radius: 0.5rem;
-    border: 1px solid #b9d6ff;
-    background-color: #dbebff;
-}
-[theme="dark"] .infobox {
-    border-color: #203652;
-    background-color: #16202c;
 }
 .infobox p {
     margin: 4px 0;
@@ -135,10 +126,6 @@ a {
     background-color: #ffdbdb;
 } */
 
-[theme="dark"] .unshared-update {
-    border-color: #203652;
-    background-color: #16202c;
-}
 .unshared-update p {
     margin: 4px 0;
 }

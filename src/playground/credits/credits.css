@@ -16,10 +16,7 @@ body[theme="dark"] {
 }
 
 a {
-    color: blue;
-}
-[theme="dark"] a {
-    color: #4af;
+    color: #fff;
 }
 
 .main section {

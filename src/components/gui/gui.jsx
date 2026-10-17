@@ -76,10 +76,7 @@ const getFullscreenBackgroundColor = () => {
     if (params.has('fullscreen-background')) {
         return params.get('fullscreen-background');
     }
-    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-        return '#111';
-    }
-    return 'white';
+    return '#111';
 };
 
 const safeJSONParse = (json, defaul, mustBeArray) => {
@@ -141,7 +138,6 @@ const GUIComponent = props => {
         onCloseAccountNav,
         onClickAddonSettings,
         onClickNewWindow,
-        onClickTheme,
         onClickPackager,
         onLogOut,
         onOpenRegistration,
@@ -487,7 +483,6 @@ const GUIComponent = props => {
                         onClickAccountNav={onClickAccountNav}
                         onClickAddonSettings={onClickAddonSettings}
                         onClickNewWindow={onClickNewWindow}
-                        onClickTheme={onClickTheme}
                         onClickPackager={onClickPackager}
                         onClickLogo={onClickLogo}
                         onCloseAccountNav={onCloseAccountNav}
@@ -717,7 +712,6 @@ GUIComponent.propTypes = {
     onClickAccountNav: PropTypes.func,
     onClickAddonSettings: PropTypes.func,
     onClickNewWindow: PropTypes.func,
-    onClickTheme: PropTypes.func,
     onClickPackager: PropTypes.func,
     onClickLogo: PropTypes.func,
     onCloseAccountNav: PropTypes.func,

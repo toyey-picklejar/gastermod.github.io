@@ -6,19 +6,15 @@
     line-height: 1.5em;
     padding: 0.5rem;
     margin: 5px 0 8px 0;
-    border: 1px solid #b9d6ff;
-    background-color: #dbebff;
+    border: 1px solid white;
+    background-color: black;
+    color: white;
     border-radius: 0.5rem;
 }
 
 .description a {
     font-weight: bold;
     text-decoration: none;
-}
-
-[theme="dark"] .description {
-    border-color: #203652;
-    background-color: #16202c;
 }
 
 .header {

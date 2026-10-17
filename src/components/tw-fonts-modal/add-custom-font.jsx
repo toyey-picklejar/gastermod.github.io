@@ -11,8 +11,8 @@ import AddButton from './add-button.jsx';
 
 const messages = defineMessages({
     error: {
-        defaultMessage: 'Failed to read font file: {error}',
-        description: 'Part of font management modal. Appears when a font from a local file could not be read.',
+        defaultMessage: 'Could not add font: {error}',
+        description: 'Part of font management modal. Appears when a font from a local file could not be added.',
         id: 'tw.fonts.readError'
     }
 });
@@ -63,24 +63,26 @@ class AddCustomFont extends React.Component {
     }
 
     componentWillUnmount () {
-        URL.revokeObjectURL(this.state.url);
+        if (this.state.url) URL.revokeObjectURL(this.state.url);
     }
 
     handleChangeFile (e) {
         const file = e.target.files[0] || null;
+        if (this.state.url) URL.revokeObjectURL(this.state.url);
         if (file) {
             this.setState({
                 file,
                 name: formatFontName(file.name),
                 format: getDataFormat(file.name),
-                url: URL.createObjectURL(file)
+                url: URL.createObjectURL(file),
+                error: null
             });
         } else {
-            URL.revokeObjectURL(this.state.url);
             this.setState({
                 file,
                 name: null,
-                url: null
+                url: null,
+                error: null
             });
         }
     }
@@ -98,35 +100,45 @@ class AddCustomFont extends React.Component {
     }
 
     handleFinish () {
+        if (!this.state.file || this.state.loading) return;
+
+        const {file, name, format, fallback} = this.state;
         this.setState({
-            loading: true
+            loading: true,
+            error: null
         });
 
         const fr = new FileReader();
         fr.onload = () => {
-            const data = new Uint8Array(fr.result);
-            const storage = this.props.fontManager.runtime.storage;
-            const asset = storage.createAsset(
-                storage.AssetType.Font,
-                this.state.format,
-                data,
-                null,
-                true
-            );
-            this.props.fontManager.addCustomFont(this.state.name, this.state.fallback, asset);
-            this.props.onClose();
+            try {
+                const data = new Uint8Array(fr.result);
+                const storage = this.props.fontManager.runtime.storage;
+                const asset = storage.createAsset(
+                    storage.AssetType.Font,
+                    format,
+                    data,
+                    null,
+                    true
+                );
+                this.props.fontManager.addCustomFont(name, fallback, asset);
+                this.props.onClose();
+            } catch (error) {
+                this.handleError(error);
+            }
         };
         fr.onerror = () => {
-            // eslint-disable-next-line no-alert
-            alert(this.props.intl.formatMessage(messages.error), {
-                error: fr.error
-            });
-
-            this.setState({
-                loading: false
-            });
+            this.handleError(fr.error);
         };
-        fr.readAsArrayBuffer(this.state.file);
+        fr.readAsArrayBuffer(file);
+    }
+
+    handleError (error) {
+        this.setState({
+            loading: false,
+            error: this.props.intl.formatMessage(messages.error, {
+                error: error && error.message ? error.message : String(error || 'Unknown error')
+            })
+        });
     }
 
     render () {
@@ -145,8 +157,29 @@ class AddCustomFont extends React.Component {
                     onChange={this.handleChangeFile}
                     className={styles.fileInput}
                     accept={FONT_FORMATS.map(ext => `.${ext}`).join(',')}
-                    readOnly={this.state.loading}
+                    disabled={this.state.loading}
                 />
+
+                {this.state.loading && (
+                    <p
+                        role="status"
+                        aria-live="polite"
+                    >
+                        <FormattedMessage
+                            defaultMessage="Adding font..."
+                            description="Part of font management modal. Shown while a font is being added."
+                            id="tw.fonts.addingStatus"
+                        />
+                    </p>
+                )}
+                {this.state.error && (
+                    <p
+                        className={styles.error}
+                        role="alert"
+                    >
+                        {this.state.error}
+                    </p>
+                )}
 
                 {this.state.file && (
                     <React.Fragment>
@@ -178,6 +211,7 @@ class AddCustomFont extends React.Component {
                 <AddButton
                     onClick={this.handleFinish}
                     disabled={!this.state.file || !this.state.name || this.state.loading}
+                    loading={this.state.loading}
                 />
             </React.Fragment>
         );

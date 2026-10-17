@@ -26,7 +26,8 @@ export default async function ({ addon, console }) {
             // is in CSS.
           },
           {
-            backgroundColor: "#60E1FF",
+            backgroundColor: "#111",
+            boxShadow: "0 0 0 1px white",
           },
         ],
         {

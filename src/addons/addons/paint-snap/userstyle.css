@@ -2,13 +2,14 @@
   position: relative;
 }
 .sa-paint-snap-button:focus-within {
-  background-color: hsla(194, 100%, 65%, 0.2);
+  background-color: rgba(255, 255, 255, 0.2);
 }
 .sa-paint-snap-button[data-enabled="true"] .sa-paint-snap-image {
   filter: brightness(0) invert(1);
 }
 .sa-paint-snap-button[data-enabled="true"] {
-  background-color: #00c3ff;
+  background-color: #111;
+  outline: 1px solid white;
 }
 
 .sa-paint-snap-group {
