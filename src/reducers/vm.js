@@ -1,11 +1,17 @@
 import VM from 'scratch-vm';
 import storage from '../lib/storage';
+import GasterModCamera from '../extensions/gastermod-camera';
+import GasterModSignals from '../extensions/gastermod-signals';
+import GasterModTools from '../extensions/gastermod-tools';
 import {MAXIMUM_CLOUD_VARIABLES} from '../lib/tw-cloud-limits';
 
 const SET_VM = 'scratch-gui/vm/SET_VM';
 const defaultVM = new VM();
 defaultVM.setCompatibilityMode(true);
 defaultVM.extensionManager.workerMode = 'iframe';
+defaultVM.extensionManager.addBuiltinExtension('gastermodTools', GasterModTools);
+defaultVM.extensionManager.addBuiltinExtension('gastermodSignals', GasterModSignals);
+defaultVM.extensionManager.addBuiltinExtension('gastermodCamera', GasterModCamera);
 defaultVM.runtime.cloudOptions.limit = MAXIMUM_CLOUD_VARIABLES;
 defaultVM.attachStorage(storage);
 const initialState = defaultVM;

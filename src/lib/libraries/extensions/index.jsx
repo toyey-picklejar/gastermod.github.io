@@ -354,6 +354,30 @@ const menuItems = [
         featured: true
     },
     {
+        name: 'GasterMod Tools',
+        extensionId: 'gastermodTools',
+        iconURL: customExtensionIcon,
+        tags: ['turbowarp', 'math'],
+        description: 'Clamp, map, and interpolate numbers; measure coordinates; and debug projects.',
+        featured: true
+    },
+    {
+        name: 'Signals',
+        extensionId: 'gastermodSignals',
+        iconURL: customExtensionIcon,
+        tags: ['turbowarp'],
+        description: 'Send named signals between sprites with a value attached.',
+        featured: true
+    },
+    {
+        name: 'Camera Tools',
+        extensionId: 'gastermodCamera',
+        iconURL: customExtensionIcon,
+        tags: ['turbowarp', 'graphics'],
+        description: 'Shake the camera and convert between world and screen coordinates.',
+        featured: true
+    },
+    {
         name: 'Files',
         extensionId: 'https://sharkpools-extensions.vercel.app/extension-code/Files-Expanded.js',
         extDeveloper: 'SharkPool',

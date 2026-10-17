@@ -58,13 +58,17 @@ const Credits = () => (
     <main className={styles.main}>
         <header className={styles.headerContainer}>
             <h1 className={styles.headerText}>
-                PenguinMod Credits
+                GasterMod Credits
             </h1>
         </header>
         <section>
-            <h1>PenguinMod</h1>
+            <h1>GasterMod</h1>
             <p>
-                Undertale was created by Toby Fox. GasterMod is inspired by W.D. Gaster, a character from Undertale.
+                GasterMod is a modded version of PenguinMod, which is itself based on TurboWarp.
+            </p>
+            <p>
+                Undertale was created by Toby Fox. GasterMod is inspired by W.D. Gaster,
+                a character from Undertale.
                 GasterMod is a fan project and is not affiliated with or endorsed by Toby Fox.
             </p>
         </section>

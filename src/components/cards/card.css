@@ -89,7 +89,7 @@
 
 .card {
     border: 1px solid $ui-tertiary;
-    border-radius: 0.75rem;
+    border-radius: 0.625rem;
     display: flex;
     flex-direction: column;
     cursor: move;
