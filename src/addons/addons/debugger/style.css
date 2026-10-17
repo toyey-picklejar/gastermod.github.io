@@ -168,7 +168,7 @@
   align-items: center;
   border-bottom: 1px solid rgba(0, 0, 0, 0.15);
   padding-left: 4px;
-  font-family: monospace;
+  font-family: monospace !important;
   color: #000;
 }
 [theme="dark"] .sa-debugger-log {
