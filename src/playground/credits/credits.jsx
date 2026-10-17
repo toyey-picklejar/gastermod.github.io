@@ -63,6 +63,10 @@ const Credits = () => (
         </header>
         <section>
             <h1>PenguinMod</h1>
+            <p>
+                Undertale was created by Toby Fox. GasterMod is inspired by W.D. Gaster, a character from Undertale.
+                GasterMod is a fan project and is not affiliated with or endorsed by Toby Fox.
+            </p>
         </section>
         <section>
             <h2>Thank you</h2>
