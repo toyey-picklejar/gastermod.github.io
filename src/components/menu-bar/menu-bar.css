@@ -87,6 +87,8 @@
 .menu-bar-item.active,
 .menu-bar-item.hoverable:hover {
     background-color: $ui-black-transparent;
+    outline: 1px solid #ffffff;
+    outline-offset: -1px;
 }
 
 .menu-bar-item.growable {

@@ -3,7 +3,7 @@ import projectData from './project-data';
 /* eslint-disable import/no-unresolved */
 import overrideDefaultProject from '!arraybuffer-loader!./default-project.sb3';
 import backdrop from '!raw-loader!./cd21514d0531fdffb22204e0ec5ed84a.svg';
-import costume1 from '!raw-loader!./penguin.svg';
+import costume1 from '!arraybuffer-loader!../../../static/images/gaster.png';
 /* eslint-enable import/no-unresolved */
 import {TextEncoder} from '../tw-text-encoder';
 
@@ -36,10 +36,10 @@ const defaultProject = translator => {
         dataFormat: 'SVG',
         data: encoder.encode(backdrop)
     }, {
-        id: 'c434b674f2da18ba13cdfe51dbc05ecc',
-        assetType: 'ImageVector',
-        dataFormat: 'SVG',
-        data: encoder.encode(costume1)
+        id: 'e7ed8979662661ed09ac8021ab34e040',
+        assetType: 'ImageBitmap',
+        dataFormat: 'PNG',
+        data: costume1
     }];
 };
 export default defaultProject;

@@ -3,6 +3,15 @@
 @import "../../css/colors.css";
 @import "../../css/z-index.css";
 
+button,
+input,
+select,
+textarea,
+[role="button"] {
+    outline: 1px solid #ffffff;
+    outline-offset: -1px;
+}
+
 .page-wrapper {
     height: 100%;
 }
@@ -79,7 +88,7 @@
     margin-bottom: 0;
 
     border-radius: 1rem 1rem 0 0;
-    border: 1px solid $ui-black-transparent;
+    border: 1px solid #ffffff;
 
     padding: 0.125rem 1.25rem 0;
     font-size: 0.75rem;
@@ -184,6 +193,7 @@
     height: 90%;
     color: $motion-primary;
     background-color: $ui-white;
+    text-shadow: -1px -1px 0 #fff, 1px -1px 0 #fff, -1px 1px 0 #fff, 1px 1px 0 #fff;
     z-index: 4; /* Make sure selected is always above */
 }
 [theme="dark"] .tab.is-selected {

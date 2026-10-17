@@ -5,8 +5,8 @@
 
 /* from scratch-www */
 $active-gray: hsla(0, 0%, 0%, .1);
-$ui-blue-10percent: hsla(215, 100%, 65%, .1);
-$ui-blue-25percent:  hsla(215, 100%, 65%, .25);
+$ui-white-10percent: hsla(0, 0%, 100%, .1);
+$ui-white-25percent:  hsla(0, 0%, 100%, .25);
 $ui-gray: hsla(0, 0%, 95%, 1);
 
 .modal-overlay {
@@ -64,12 +64,12 @@ $ui-gray: hsla(0, 0%, 95%, 1);
 }
 
 .radio-buttons label:hover {
-    background-color: $ui-blue-10percent;
+    background-color: $ui-white-10percent;
 }
 
 .radio-buttons label.label-selected,
 .radio-buttons label.label-selected:hover {
-    background-color: $ui-blue-25percent;
+    background-color: $ui-white-25percent;
 }
 
 .radio-buttons input[type="radio"] {
@@ -85,7 +85,7 @@ $ui-gray: hsla(0, 0%, 95%, 1);
 
 .radio-buttons input[type="radio"]:checked,
 .radio-buttons input[type="radio"]:focus {
-    box-shadow: 0 0 0 2px $ui-blue-25percent;
+    box-shadow: 0 0 0 2px $ui-white-25percent;
     outline: none;
 }
 
