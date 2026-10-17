@@ -28,6 +28,8 @@ import robotIcon from './icon--robot.svg';
 import echoIcon from './icon--echo.svg';
 import highpassIcon from './icon--highpass.svg';
 import lowpassIcon from './icon--lowpass.svg';
+import normalizeIcon from './icon--normalize.svg';
+import distortionIcon from './icon--distortion.svg';
 import reverseIcon from './icon--reverse.svg';
 import fadeOutIcon from './icon--fade-out.svg';
 import fadeInIcon from './icon--fade-in.svg';
@@ -150,6 +152,16 @@ const messages = defineMessages({
         id: 'pm.soundEditor.highPass',
         description: 'Title of the button to apply high pass on audio',
         defaultMessage: 'High Pass'
+    },
+    normalize: {
+        id: 'pm.soundEditor.normalize',
+        description: 'Title of the button to normalize the sound volume',
+        defaultMessage: 'Normalize'
+    },
+    distortion: {
+        id: 'pm.soundEditor.distortion',
+        description: 'Title of the button to apply distortion',
+        defaultMessage: 'Distortion'
     },
     format: {
         id: 'pm.soundEditor.format',
@@ -397,6 +409,18 @@ const SoundEditor = props => (
                 />
                 <IconButton
                     className={styles.effectButton}
+                    img={normalizeIcon}
+                    title={<FormattedMessage {...messages.normalize} />}
+                    onClick={props.onNormalize}
+                />
+                <IconButton
+                    className={styles.effectButton}
+                    img={distortionIcon}
+                    title={<FormattedMessage {...messages.distortion} />}
+                    onClick={props.onDistortion}
+                />
+                <IconButton
+                    className={styles.effectButton}
                     img={formatIcon}
                     title={<FormattedMessage {...messages.format} />}
                     onClick={props.onFormatSound}
@@ -483,6 +507,7 @@ SoundEditor.propTypes = {
     onCopy: PropTypes.func.isRequired,
     onCopyToNew: PropTypes.func.isRequired,
     onDelete: PropTypes.func,
+    onDistortion: PropTypes.func.isRequired,
     onEcho: PropTypes.func.isRequired,
     onLowPass: PropTypes.func.isRequired,
     onHighPass: PropTypes.func.isRequired,
@@ -493,6 +518,7 @@ SoundEditor.propTypes = {
     onFormatSound: PropTypes.func.isRequired,
     onLouder: PropTypes.func.isRequired,
     onMute: PropTypes.func.isRequired,
+    onNormalize: PropTypes.func.isRequired,
     onPaste: PropTypes.func.isRequired,
     onPlay: PropTypes.func.isRequired,
     onRedo: PropTypes.func.isRequired,

@@ -5,6 +5,7 @@ import FadeEffect from './effects/fade-effect.js';
 import MuteEffect from './effects/mute-effect.js';
 import LowPassEffect from './effects/lowpass-effect.js';
 import HighPassEffect from './effects/highpass-effect.js';
+import DistortionEffect from './effects/distortion-effect.js';
 
 const effectTypes = {
     ROBOT: 'robot',
@@ -18,7 +19,9 @@ const effectTypes = {
     FADEOUT: 'fade out',
     MUTE: 'mute',
     LOWPASS: 'low pass',
-    HIGHPASS: 'high pass'
+    HIGHPASS: 'high pass',
+    NORMALIZE: 'normalize',
+    DISTORTION: 'distortion'
 };
 
 const centsToFrequency = (cents) => {
@@ -83,13 +86,22 @@ class AudioEffects {
             audioContextSampleRate = newSampleRate;
             audioContextSampleCount = Math.floor((sampleCount / buffer.sampleRate) * newSampleRate);
         }
+        const channelCount = Object.prototype.hasOwnProperty.call(options, 'pan') ? 2 : 1;
         if (window.OfflineAudioContext) {
-            this.audioContext = new window.OfflineAudioContext(1, audioContextSampleCount, audioContextSampleRate);
+            this.audioContext = new window.OfflineAudioContext(
+                channelCount,
+                audioContextSampleCount,
+                audioContextSampleRate
+            );
         } else {
             // Need to use webkitOfflineAudioContext, which doesn't support all sample rates.
             // Resample by adjusting sample count to make room and set offline context to desired sample rate.
             const sampleScale = 44100 / audioContextSampleRate;
-            this.audioContext = new window.webkitOfflineAudioContext(1, sampleScale * audioContextSampleCount, 44100);
+            this.audioContext = new window.webkitOfflineAudioContext(
+                channelCount,
+                sampleScale * audioContextSampleCount,
+                44100
+            );
         }
 
         // All effects not seen below use the original buffer because it is not modified.
@@ -224,6 +236,31 @@ class AudioEffects {
                 ({input, output} = new MuteEffect(this.audioContext,
                     this.adjustedTrimStartSeconds, this.adjustedTrimEndSeconds));
                 break;
+            case effectTypes.NORMALIZE: {
+                const samples = this.buffer.getChannelData(0);
+                const startIndex = Math.floor(this.trimStartSeconds * this.buffer.sampleRate);
+                const endIndex = Math.ceil(this.trimEndSeconds * this.buffer.sampleRate);
+                let peak = 0;
+                for (let i = startIndex; i < endIndex; i++) {
+                    peak = Math.max(peak, Math.abs(samples[i]));
+                }
+                const gain = peak > 0 ? Math.min(0.95 / peak, 100) : 1;
+                ({input, output} = new VolumeEffect(
+                    this.audioContext,
+                    gain,
+                    this.adjustedTrimStartSeconds,
+                    this.adjustedTrimEndSeconds
+                ));
+                break;
+            }
+            case effectTypes.DISTORTION: {
+                ({input, output} = new DistortionEffect(
+                    this.audioContext,
+                    this.adjustedTrimStartSeconds,
+                    this.adjustedTrimEndSeconds
+                ));
+                break;
+            }
             default:
                 if (Object.prototype.hasOwnProperty.call(this.options, "pitch")) {
                     this.source.playbackRate.setValueAtTime(this.playbackRate, this.adjustedTrimStartSeconds);
@@ -236,7 +273,21 @@ class AudioEffects {
                 break;
         }
 
-        if (input && output) {
+        if (Object.prototype.hasOwnProperty.call(this.options, 'pan')) {
+            const panner = this.audioContext.createStereoPanner();
+            const pan = Math.max(-1, Math.min(1, Number(this.options.pan) || 0));
+            panner.pan.setValueAtTime(0, 0);
+            panner.pan.setValueAtTime(pan, this.adjustedTrimStartSeconds);
+            panner.pan.setValueAtTime(pan, this.adjustedTrimEndSeconds);
+            panner.pan.setValueAtTime(0, this.adjustedTrimEndSeconds + 0.01);
+            if (input && output) {
+                this.source.connect(input);
+                output.connect(panner);
+            } else {
+                this.source.connect(panner);
+            }
+            panner.connect(this.audioContext.destination);
+        } else if (input && output) {
             this.source.connect(input);
             output.connect(this.audioContext.destination);
         } else {

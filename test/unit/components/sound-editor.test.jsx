@@ -25,6 +25,8 @@ describe('Sound Editor Component', () => {
             onLouder: jest.fn(),
             onRobot: jest.fn(),
             onEcho: jest.fn(),
+            onNormalize: jest.fn(),
+            onDistortion: jest.fn(),
             onFaster: jest.fn(),
             onSlower: jest.fn(),
             onSetTrimEnd: jest.fn(),
@@ -105,6 +107,12 @@ describe('Sound Editor Component', () => {
 
         wrapper.find('[children="Softer"]').simulate('click');
         expect(props.onSofter).toHaveBeenCalled();
+
+        wrapper.find('[children="Normalize"]').simulate('click');
+        expect(props.onNormalize).toHaveBeenCalled();
+
+        wrapper.find('[children="Distortion"]').simulate('click');
+        expect(props.onDistortion).toHaveBeenCalled();
     });
 
     test('undo and redo buttons can be disabled by canUndo/canRedo', () => {

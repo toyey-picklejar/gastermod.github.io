@@ -9,8 +9,8 @@ import { connect } from 'react-redux';
 import {
     computeChunkedRMS,
     encodeAndAddSoundToVM,
-    downsampleIfNeeded,
-    dropEveryOtherSample
+    dropEveryOtherSample,
+    SOUND_BYTE_LIMIT
 } from '../lib/audio/audio-util.js';
 import AudioEffects from '../lib/audio/audio-effects.js';
 import SoundEditorComponent from '../components/sound-editor/sound-editor.jsx';
@@ -145,22 +145,35 @@ class SoundEditor extends React.Component {
     resetState(samples, sampleRate) {
         this.audioBufferPlayer.stop();
         this.audioBufferPlayer = new AudioBufferPlayer(samples, sampleRate);
+        const waveformSamples = Array.isArray(samples) ? samples[0] : samples;
         this.setState({
-            chunkLevels: computeChunkedRMS(samples, this.props.waveformChunkSize),
+            chunkLevels: computeChunkedRMS(waveformSamples, this.props.waveformChunkSize),
             playhead: null
         });
     }
     submitNewSamples(samples, sampleRate, skipUndo) {
-        return downsampleIfNeeded({ samples, sampleRate }, this.resampleBufferToRate)
-            .then(({ samples: newSamples, sampleRate: newSampleRate }) =>
-                WavEncoder.encode({
+        const inputChannels = Array.isArray(samples) ? samples : [samples];
+        const shouldDownsample = inputChannels.reduce((length, channel) => length + channel.length, 0) * 2 >=
+            SOUND_BYTE_LIMIT;
+        const samplePromises = shouldDownsample ?
+            inputChannels.map(channel => this.resampleBufferToRate({samples: channel, sampleRate}, 22050)) :
+            [Promise.resolve({samples: inputChannels[0], sampleRate})];
+        if (!shouldDownsample && inputChannels.length > 1) {
+            samplePromises.push(...inputChannels.slice(1).map(channel =>
+                Promise.resolve({samples: channel, sampleRate})));
+        }
+        return Promise.all(samplePromises)
+            .then(resampledChannels => {
+                const newSamples = resampledChannels.map(channel => channel.samples);
+                const newSampleRate = resampledChannels[0].sampleRate;
+                return WavEncoder.encode({
                     sampleRate: newSampleRate,
-                    channelData: [newSamples]
+                    channelData: newSamples
                 }).then(wavBuffer => {
                     if (!skipUndo) {
                         this.redoStack = [];
                         if (this.undoStack.length >= UNDO_STACK_SIZE) {
-                            this.undoStack.shift(); // Drop the first element off the array
+                            this.undoStack.shift();
                         }
                         this.undoStack.push(this.getUndoItem());
                     }
@@ -169,13 +182,12 @@ class SoundEditor extends React.Component {
                         this.props.soundIndex,
                         this.audioBufferPlayer.buffer,
                         new Uint8Array(wavBuffer));
-                    return true; // Edit was successful
-                })
-            )
+                    return true;
+                });
+            })
             .catch(e => {
-                // Encoding failed, or the sound was too large to save so edit is rejected
                 log.error(`Encountered error while trying to encode sound update: ${e.message}`);
-                return false; // Edit was not applied
+                return false;
             });
     }
     handlePlay() {
@@ -268,7 +280,10 @@ class SoundEditor extends React.Component {
 
         const effects = new AudioEffects(this.audioBufferPlayer.buffer, options, trimStart, trimEnd);
         effects.process((renderedBuffer, adjustedTrimStart, adjustedTrimEnd) => {
-            const samples = renderedBuffer.getChannelData(0);
+            const samples = Array.from(
+                {length: renderedBuffer.numberOfChannels},
+                (_, index) => renderedBuffer.getChannelData(index)
+            );
             const sampleRate = renderedBuffer.sampleRate;
             this.submitNewSamples(samples, sampleRate).then(success => {
                 if (success) {
@@ -297,17 +312,22 @@ class SoundEditor extends React.Component {
         return max > MAX_RMS;
     }
     getUndoItem() {
+        const channels = Array.from(
+            {length: this.audioBufferPlayer.buffer.numberOfChannels},
+            (_, index) => new Float32Array(this.audioBufferPlayer.buffer.getChannelData(index))
+        );
         return {
             ...this.copyCurrentBuffer(),
+            channels,
             trimStart: this.state.trimStart,
             trimEnd: this.state.trimEnd
         };
     }
     handleUndo() {
         this.redoStack.push(this.getUndoItem());
-        const { samples, sampleRate, trimStart, trimEnd } = this.undoStack.pop();
+        const { samples, channels, sampleRate, trimStart, trimEnd } = this.undoStack.pop();
         if (samples) {
-            return this.submitNewSamples(samples, sampleRate, true).then(success => {
+            return this.submitNewSamples(channels || samples, sampleRate, true).then(success => {
                 if (success) {
                     this.setState({ trimStart: trimStart, trimEnd: trimEnd }, this.handlePlay);
                 }
@@ -315,10 +335,10 @@ class SoundEditor extends React.Component {
         }
     }
     handleRedo() {
-        const { samples, sampleRate, trimStart, trimEnd } = this.redoStack.pop();
+        const { samples, channels, sampleRate, trimStart, trimEnd } = this.redoStack.pop();
         if (samples) {
             this.undoStack.push(this.getUndoItem());
-            return this.submitNewSamples(samples, sampleRate, true).then(success => {
+            return this.submitNewSamples(channels || samples, sampleRate, true).then(success => {
                 if (success) {
                     this.setState({ trimStart: trimStart, trimEnd: trimEnd }, this.handlePlay);
                 }
@@ -494,8 +514,10 @@ class SoundEditor extends React.Component {
         const bufferSelection = this.getSelectionBuffer();
         // for preview
         const audio = new AudioContext();
+        const panner = audio.createStereoPanner();
         const gainNode = audio.createGain();
         gainNode.gain.value = 1;
+        panner.connect(gainNode);
         gainNode.connect(audio.destination);
 
         // create inputs before menu so we can get the value easier
@@ -505,20 +527,31 @@ class SoundEditor extends React.Component {
         const volumeDiv = genSliderDiv(
             "Volume", { min: 0, max: 2, step: 0.01, value: 1 }, 100
         );
+        const panDiv = genSliderDiv(
+            "Panning", { min: -100, max: 100, step: 1, value: 0 }, 1
+        );
         const pitchParts = pitchDiv.children;
         const volumeParts = volumeDiv.children;
+        const panParts = panDiv.children;
+        let panChanged = false;
         let menu = await window.ScratchBlocks.customPrompt(
-            { title: "Modify Sound" }, { content: { width: "230px", height: "auto" } },
+            { title: "Modify Sound" }, { content: { width: "330px", height: "auto" } },
             [
                 {
                     name: "Apply", role: "ok", callback: () => {
                         audio.close();
-                        const pitch = pitchParts[1].value, volume = volumeParts[1].value;
+                        const pitch = pitchParts[1].value;
+                        const volume = volumeParts[1].value;
+                        const pan = panParts[1].value;
                         const truePitch = isNaN(Number(pitch)) ? 0 : Number(pitch);
                         const trueVolume = isNaN(Number(volume)) ? 0 : Number(volume);
-                        this.handleEffect({
-                            pitch: truePitch * 10, volume: trueVolume
-                        });
+                        const truePan = isNaN(Number(pan)) ? 0 : Number(pan);
+                        const options = {
+                            pitch: truePitch * 10,
+                            volume: trueVolume
+                        };
+                        if (panChanged) options.pan = truePan / 100;
+                        this.handleEffect(options);
                     }
                 },
                 { name: "Cancel", role: "close", callback: () => audio.close() },
@@ -526,8 +559,8 @@ class SoundEditor extends React.Component {
         );
 
         const modalHandler = () => {
-            menu.setAttribute("style", "margin-bottom: 15px;position: relative;display: flex;justify-content: flex-end;flex-direction: row;height: calc(100% - (3.125em + 2.125em + 16px));align-items: center;");
-            menu.append(pitchDiv, volumeDiv);
+            menu.setAttribute("style", "margin-bottom: 15px;position: relative;display: flex;justify-content: center;flex-direction: row;height: calc(100% - (3.125em + 2.125em + 16px));align-items: center;");
+            menu.append(pitchDiv, volumeDiv, panDiv);
 
             const previewButton = document.createElement("button");
             previewButton.style = "border-radius: 1000px;padding: 5px;width: 45px;height: 45px;border: 1px solid white;background: #111;";
@@ -542,7 +575,7 @@ class SoundEditor extends React.Component {
             let bufferSource, audioPlaying = false;
             function play() {
                 bufferSource = audio.createBufferSource();
-                bufferSource.connect(gainNode);
+                bufferSource.connect(panner);
                 bufferSource.buffer = properBuffer;
                 bufferSource.start(0);
                 bufferSource.detune.value = pitchParts[1].value * 10;
@@ -589,13 +622,27 @@ class SoundEditor extends React.Component {
                 vSlider.onchange(false);
             };
             vNumber.oninput = vNumber.onchange;
+
+            const panSlider = panParts[1];
+            const panNumber = panParts[2];
+            panSlider.onchange = (updateValue) => {
+                panChanged = true;
+                panner.pan.value = panSlider.value / 100;
+                if (updateValue !== false) panNumber.value = Number(panSlider.value);
+            };
+            panSlider.oninput = panSlider.onchange;
+            panNumber.onchange = () => {
+                panSlider.value = panNumber.value;
+                panSlider.onchange(false);
+            };
+            panNumber.oninput = panNumber.onchange;
         };
 
         // account for weird react timing issue
         if (menu) modalHandler();
         else queueMicrotask(() => {
           menu = document.querySelector(`div[class="ReactModalPortal"] div[class*="prompt_body_"] div`);
-          menu.parentNode.parentNode.parentNode.style.width = "230px";
+          menu.parentNode.parentNode.parentNode.style.width = "330px";
           modalHandler();
         });
     }
@@ -723,6 +770,7 @@ class SoundEditor extends React.Component {
                 onCopy={this.handleCopy}
                 onCopyToNew={this.handleCopyToNew}
                 onDelete={this.handleDelete}
+                onDistortion={this.effectFactory(effectTypes.DISTORTION)}
                 onEcho={this.effectFactory(effectTypes.ECHO)}
                 onFadeIn={this.effectFactory(effectTypes.FADEIN)}
                 onFadeOut={this.effectFactory(effectTypes.FADEOUT)}
@@ -731,6 +779,7 @@ class SoundEditor extends React.Component {
                 onModifySound={this.handleModifyMenu}
                 onFormatSound={this.handleFormatMenu}
                 onMute={this.effectFactory(effectTypes.MUTE)}
+                onNormalize={this.effectFactory(effectTypes.NORMALIZE)}
                 onPaste={this.handlePaste}
                 onPlay={this.handlePlay}
                 onRedo={this.handleRedo}
